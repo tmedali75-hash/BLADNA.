@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLADNA Dashboard</title>
+    <style>
+      :root {
+        --blue: #334047;
+        --blue-2: #587177;
+        --gold: #ec7646;
+        --gold-soft: #fbdcca;
+        --sand: #f1e9e2;
+        --warm: #fbf8f5;
+        --white: #ffffff;
+        --ink: #1c1f1e;
+        --muted: #587177;
+        --line: #e3e8ea;
+        --danger: #d14c4c;
+        --success: #1f8d5a;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: var(--warm);
+        color: var(--ink);
+      }
+
+      .shell {
+        display: grid;
+        grid-template-columns: 260px 1fr;
+        min-height: 100vh;
+      }
+
+      .sidebar {
+        background: linear-gradient(180deg, var(--blue) 0%, var(--blue-2) 100%);
+        color: #fff;
+        padding: 26px 18px;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 28px;
+        padding: 8px 12px;
+      }
+
+      .brand-badge {
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        display: grid;
+        place-items: center;
+        background: rgba(255,255,255,0.14);
+        font-weight: 700;
+      }
+
+      .brand h2 {
+        margin: 0;
+        font-size: 1.15rem;
+      }
+
+      nav {
+        display: grid;
+        gap: 8px;
+      }
+
+      .nav-item {
+        width: 100%;
+        text-align: left;
+        border: 0;
+        background: transparent;
+        color: rgba(255,255,255,0.82);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font-size: 0.96rem;
+        font-weight: 600;
+        cursor: pointer;
+      }
+
+      .nav-item.active {
+        background: rgba(255,255,255,0.12);
+        color: #fff;
+      }
+
+      .content {
+        padding: 28px;
+      }
+
+      .topbar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 26px;
+        gap: 18px;
+      }
+
+      .topbar h1 {
+        margin: 0;
+        font-size: clamp(1.8rem, 3vw, 2.5rem);
+        color: var(--blue);
+      }
+
+      .logout-btn {
+        border: 0;
+        background: var(--gold);
+        color: #fff;
+        border-radius: 999px;
+        padding: 10px 18px;
+        font-weight: 700;
+        cursor: pointer;
+      }
+
+      .summary-grid {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(180px, 1fr));
+        gap: 16px;
+        margin-bottom: 24px;
+      }
+
+      .card {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 18px 18px 16px;
+        box-shadow: 0 6px 18px rgba(51,64,71,0.05);
+      }
+
+      .card .label {
+        display: block;
+        color: var(--muted);
+        font-size: 0.8rem;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+      }
+
+      .card .value {
+        font-size: clamp(1.7rem, 2vw, 2.2rem);
+        font-weight: 700;
+        color: var(--blue);
+      }
+
+      .panel {
+        background: var(--white);
+        border: 1px solid var(--line);
+        border-radius: 18px;
+        padding: 22px;
+        box-shadow: 0 8px 22px rgba(51,64,71,0.04);
+        margin-bottom: 20px;
+      }
+
+      .panel-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 16px;
+      }
+
+      .panel-header h3 {
+        margin: 0;
+        color: var(--blue);
+      }
+
+      .panel-header .status {
+        font-size: 0.76rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        background: var(--gold-soft);
+        color: var(--gold);
+        border-radius: 999px;
+        padding: 8px 10px;
+        font-weight: 700;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th, td {
+        padding: 12px 10px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        color: var(--muted);
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+      }
+
+      td {
+        font-size: 0.95rem;
+      }
+
+      .badge {
+        display: inline-block;
+        border-radius: 999px;
+        padding: 6px 10px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+      }
+
+      .badge.pending { background: #FFF4D9; color: #A46700; }
+      .badge.confirmed { background: #E7F7EE; color: #146B46; }
+      .badge.cancelled { background: #FDE8E8; color: #B64242; }
+      .badge.unread { background: #E8F1FF; color: #204F9E; }
+      .badge.read { background: #F1F3F5; color: #3E4A59; }
+      .badge.replied { background: #E7F7EE; color: #146B46; }
+
+      .row-actions {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      select, button.small {
+        border: 1px solid var(--line);
+        border-radius: 10px;
+        padding: 8px 10px;
+        background: #fff;
+        font: inherit;
+      }
+
+      .small-danger {
+        border-color: rgba(209,76,76,0.3);
+        color: var(--danger);
+      }
+
+      .manage-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(180px, 1fr));
+        gap: 16px;
+      }
+
+      .tour-item {
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 14px;
+        background: #fff;
+      }
+
+      .tour-item h4 {
+        margin: 0 0 8px;
+        color: var(--blue);
+      }
+
+      .tour-item p {
+        margin: 0;
+        color: var(--muted);
+        font-size: 0.9rem;
+      }
+
+      .empty {
+        color: var(--muted);
+        padding: 16px;
+      }
+
+      @media (max-width: 980px) {
+        .shell { grid-template-columns: 1fr; }
+        .sidebar { padding-bottom: 12px; }
+        nav { grid-template-columns: repeat(2, minmax(160px, 1fr)); }
+        .summary-grid { grid-template-columns: repeat(2, minmax(180px, 1fr)); }
+      }
+
+      @media (max-width: 620px) {
+        .content { padding: 18px 14px 26px; }
+        .summary-grid, .manage-grid { grid-template-columns: 1fr; }
+        .topbar { flex-direction: column; align-items: flex-start; }
+        table { display: block; overflow-x: auto; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="brand">
+          <div class="brand-badge">B</div>
+          <h2>BLADNA</h2>
+        </div>
+
+        <nav>
+          <button class="nav-item active" type="button" data-target="dashboard">Dashboard</button>
+          <button class="nav-item" type="button" data-target="reservations">Tour Reservations</button>
+          <button class="nav-item" type="button" data-target="requests">Customer Requests</button>
+          <button class="nav-item" type="button" data-target="manage-tours">Manage Tours</button>
+          <button class="nav-item" type="button" data-target="settings">Settings</button>
+          <button class="nav-item" type="button" id="logoutBtn">Logout</button>
+        </nav>
+      </aside>
+
+      <main class="content">
+        <div class="topbar">
+          <h1>Admin Dashboard</h1>
+          <button class="logout-btn" id="topLogoutBtn" type="button">Log out</button>
+        </div>
+
+        <section class="summary-grid" id="dashboard">
+          <div class="card">
+            <span class="label">Total reservations</span>
+            <div class="value" id="totalReservations">0</div>
+          </div>
+          <div class="card">
+            <span class="label">New requests</span>
+            <div class="value" id="newRequests">0</div>
+          </div>
+          <div class="card">
+            <span class="label">Pending reservations</span>
+            <div class="value" id="pendingReservations">0</div>
+          </div>
+          <div class="card">
+            <span class="label">Confirmed reservations</span>
+            <div class="value" id="confirmedReservations">0</div>
+          </div>
+          <div class="card">
+            <span class="label">Cancelled reservations</span>
+            <div class="value" id="cancelledReservations">0</div>
+          </div>
+        </section>
+
+        <section class="panel" id="reservations">
+          <div class="panel-header">
+            <h3>Recent reservations</h3>
+            <span class="status">Live</span>
+          </div>
+          <div id="reservationsTable"></div>
+        </section>
+
+        <section class="panel" id="requests">
+          <div class="panel-header">
+            <h3>Latest customer requests</h3>
+            <span class="status">Inbox</span>
+          </div>
+          <div id="requestsTable"></div>
+        </section>
+
+        <section class="panel" id="manage-tours">
+          <div class="panel-header">
+            <h3>Manage tours</h3>
+            <span class="status">Catalog</span>
+          </div>
+          <div class="manage-grid" id="toursGrid"></div>
+        </section>
+
+        <section class="panel" id="settings">
+          <div class="panel-header">
+            <h3>Settings</h3>
+            <span class="status">Secure</span>
+          </div>
+          <p id="currentUser" style="margin:0; color: var(--muted);"></p>
+        </section>
+      </main>
+    </div>
+
+    <script>
+      const summaryEls = {
+        totalReservations: document.getElementById('totalReservations'),
+        newRequests: document.getElementById('newRequests'),
+        pendingReservations: document.getElementById('pendingReservations'),
+        confirmedReservations: document.getElementById('confirmedReservations'),
+        cancelledReservations: document.getElementById('cancelledReservations')
+      };
+
+      const tours = [
+        'Sahara Desert Adventure',
+        'Djerba Island Discovery',
+        'Sidi Bou Said & Carthage',
+        'Tozeur & Mountain Oases',
+        'Kairouan Cultural Experience',
+        'Tunisian Coastal Escape'
+      ];
+
+      async function fetchJson(url, options = {}) {
+        const response = await fetch(url, options);
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.message || 'Request failed.');
+        }
+
+        return data;
+      }
+
+      function statusClass(value) {
+        return String(value || '').toLowerCase().replace(/\s+/g, '-');
+      }
+
+      function renderSummary(data) {
+        summaryEls.totalReservations.textContent = data.totalReservations || 0;
+        summaryEls.newRequests.textContent = data.newRequests || 0;
+        summaryEls.pendingReservations.textContent = data.pendingReservations || 0;
+        summaryEls.confirmedReservations.textContent = data.confirmedReservations || 0;
+        summaryEls.cancelledReservations.textContent = data.cancelledReservations || 0;
+      }
+
+      function renderReservations(reservations) {
+        const tableWrap = document.getElementById('reservationsTable');
+
+        if (!reservations.length) {
+          tableWrap.innerHTML = '<div class="empty">No tour reservations yet.</div>';
+          return;
+        }
+
+        tableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Tour</th>
+                <th>Date</th>
+                <th>People</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${reservations.map((item) => `
+                <tr>
+                  <td>
+                    <strong>${item.name}</strong><br>
+                    <small>${item.email}</small><br>
+                    <small>${item.phone || 'No phone'}</small>
+                  </td>
+                  <td>${item.tour}</td>
+                  <td>${item.preferred_date || 'Flexible'}</td>
+                  <td>${item.travellers}</td>
+                  <td>
+                    <span class="badge ${statusClass(item.status)}">${item.status}</span>
+                  </td>
+                  <td>
+                    <div class="row-actions">
+                      <select data-id="${item.id}" data-kind="reservation-status">
+                        <option value="Pending" ${item.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="Confirmed" ${item.status === 'Confirmed' ? 'selected' : ''}>Confirmed</option>
+                        <option value="Cancelled" ${item.status === 'Cancelled' ? 'selected' : ''}>Cancelled</option>
+                      </select>
+                      <button class="small small-danger" type="button" data-id="${item.id}" data-kind="reservation-delete">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function renderRequests(requests) {
+        const tableWrap = document.getElementById('requestsTable');
+
+        if (!requests.length) {
+          tableWrap.innerHTML = '<div class="empty">No customer requests yet.</div>';
+          return;
+        }
+
+        tableWrap.innerHTML = `
+          <table>
+            <thead>
+              <tr>
+                <th>Name</th>
+                <th>Subject</th>
+                <th>Message</th>
+                <th>Status</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${requests.map((item) => `
+                <tr>
+                  <td>
+                    <strong>${item.name}</strong><br>
+                    <small>${item.email}</small>
+                  </td>
+                  <td>${item.subject}</td>
+                  <td>${item.message.slice(0, 120)}${item.message.length > 120 ? '...' : ''}</td>
+                  <td>
+                    <span class="badge ${statusClass(item.status)}">${item.status}</span>
+                  </td>
+                  <td>
+                    <div class="row-actions">
+                      <select data-id="${item.id}" data-kind="request-status">
+                        <option value="Unread" ${item.status === 'Unread' ? 'selected' : ''}>Unread</option>
+                        <option value="Read" ${item.status === 'Read' ? 'selected' : ''}>Read</option>
+                        <option value="Replied" ${item.status === 'Replied' ? 'selected' : ''}>Replied</option>
+                      </select>
+                      <button class="small small-danger" type="button" data-id="${item.id}" data-kind="request-delete">Delete</button>
+                    </div>
+                  </td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      }
+
+      function renderTours() {
+        const grid = document.getElementById('toursGrid');
+        grid.innerHTML = tours.map((tour) => `
+          <div class="tour-item">
+            <h4>${tour}</h4>
+            <p>Available in the website catalog and active in the booking flow.</p>
+          </div>
+        `).join('');
+      }
+
+      async function loadDashboard() {
+        try {
+          const summary = await fetchJson('/api/dashboard/summary', { credentials: 'same-origin' });
+          renderSummary(summary);
+          const reservations = await fetchJson('/api/reservations', { credentials: 'same-origin' });
+          renderReservations(reservations);
+          const requests = await fetchJson('/api/requests', { credentials: 'same-origin' });
+          renderRequests(requests);
+          renderTours();
+        } catch (error) {
+          alert(error.message || 'Unable to load the dashboard.');
+          window.location.href = '/admin/login';
+        }
+      }
+
+      document.addEventListener('change', async function (event) {
+        const target = event.target;
+        const id = Number(target.dataset.id);
+        const kind = target.dataset.kind;
+
+        if (!id || !kind) return;
+
+        const newStatus = target.value;
+
+        try {
+          if (kind === 'reservation-status') {
+            await fetchJson(`/api/reservations/${id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: newStatus })
+            });
+          }
+
+          if (kind === 'request-status') {
+            await fetchJson(`/api/requests/${id}/status`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ status: newStatus })
+            });
+          }
+
+          loadDashboard();
+        } catch (error) {
+          alert(error.message || 'Unable to update status.');
+        }
+      });
+
+      document.addEventListener('click', async function (event) {
+        const button = event.target.closest('button');
+        if (!button) return;
+
+        const id = Number(button.dataset.id);
+        const kind = button.dataset.kind;
+
+        if (!id || !kind) return;
+
+        try {
+          if (kind === 'reservation-delete') {
+            await fetchJson(`/api/reservations/${id}`, {
+              method: 'DELETE'
+            });
+          }
+
+          if (kind === 'request-delete') {
+            await fetchJson(`/api/requests/${id}`, {
+              method: 'DELETE'
+            });
+          }
+
+          loadDashboard();
+        } catch (error) {
+          alert(error.message || 'Unable to delete item.');
+        }
+      });
+
+      async function logout() {
+        try {
+          await fetchJson('/api/admin/logout', { method: 'POST' });
+          window.location.href = '/admin/login';
+        } catch (error) {
+          window.location.href = '/admin/login';
+        }
+      }
+
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+      document.getElementById('topLogoutBtn').addEventListener('click', logout);
+
+      fetchJson('/api/admin/me').then((data) => {
+        const currentUser = document.getElementById('currentUser');
+        if (data.user) {
+          currentUser.textContent = `Signed in as: ${data.user.username} (${data.user.email})`;
+        }
+      }).catch(() => {
+        window.location.href = '/admin/login';
+      });
+
+      loadDashboard();
+    </script>
+  </body>
+</html>

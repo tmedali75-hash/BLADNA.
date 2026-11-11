@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>BLADNA Admin Login</title>
+    <style>
+      :root {
+        --blue: #334047;
+        --blue-2: #587177;
+        --gold: #ec7646;
+        --gold-soft: #fbdcca;
+        --sand: #f1e9e2;
+        --white: #ffffff;
+        --ink: #1c1f1e;
+        --muted: #587177;
+        --danger: #d14c4c;
+      }
+
+      * { box-sizing: border-box; }
+
+      body {
+        margin: 0;
+        font-family: Inter, Arial, sans-serif;
+        background: linear-gradient(135deg, var(--sand), #fbf8f5);
+        color: var(--ink);
+      }
+
+      .login-shell {
+        min-height: 100vh;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+
+      .login-card {
+        width: min(480px, 100%);
+        background: rgba(255,255,255,0.9);
+        border-radius: 24px;
+        box-shadow: 0 25px 60px rgba(51,64,71,0.12);
+        border: 1px solid rgba(51,64,71,0.06);
+        padding: 32px;
+      }
+
+      .brand {
+        display: inline-block;
+        color: var(--gold);
+        letter-spacing: .18em;
+        text-transform: uppercase;
+        font-size: 12px;
+        font-weight: 700;
+        margin-bottom: 18px;
+      }
+
+      h1 {
+        margin: 0 0 8px;
+        font-size: clamp(2rem, 3vw, 2.6rem);
+        color: var(--blue);
+      }
+
+      .subtitle {
+        margin: 0 0 24px;
+        color: var(--muted);
+        line-height: 1.6;
+      }
+
+      form {
+        display: grid;
+        gap: 16px;
+      }
+
+      label {
+        display: grid;
+        gap: 7px;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: var(--blue);
+      }
+
+      input {
+        width: 100%;
+        border: 1.5px solid #dfe6e7;
+        border-radius: 14px;
+        padding: 14px 16px;
+        font-size: 1rem;
+        outline: none;
+        transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      input:focus {
+        border-color: var(--gold);
+        box-shadow: 0 0 0 4px rgba(236,118,70,0.12);
+      }
+
+      button {
+        border: 0;
+        border-radius: 999px;
+        background: linear-gradient(135deg, var(--blue), var(--blue-2));
+        color: white;
+        padding: 16px 20px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 18px 30px rgba(51,64,71,0.18);
+      }
+
+      .alert {
+        min-height: 24px;
+        margin-top: 8px;
+        color: var(--danger);
+        font-size: 0.93rem;
+      }
+
+      .meta {
+        margin-top: 20px;
+        color: var(--muted);
+        font-size: 0.85rem;
+      }
+
+      @media (max-width: 560px) {
+        .login-card { padding: 24px 20px; }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="login-shell">
+      <div class="login-card">
+        <div class="brand">BLADNA</div>
+        <h1>Welcome back</h1>
+        <p class="subtitle">Access the private admin dashboard to manage reservations, inquiries, and tour bookings.</p>
+
+        <form id="loginForm">
+          <label>
+            Username or email
+            <input type="text" name="usernameOrEmail" placeholder="admin or admin@bladna.tn" required />
+          </label>
+
+          <label>
+            Password
+            <input type="password" name="password" placeholder="Enter your password" required />
+          </label>
+
+          <button type="submit">Sign in</button>
+        </form>
+
+        <div class="alert" id="loginError" aria-live="polite"></div>
+
+        <div class="meta">
+          Default admin credentials: username = admin / password = admin123<br>
+          Change them in the environment before production deployment.
+        </div>
+      </div>
+    </div>
+
+    <script>
+      const loginForm = document.getElementById('loginForm');
+      const loginError = document.getElementById('loginError');
+
+      loginForm.addEventListener('submit', async function (event) {
+        event.preventDefault();
+        loginError.textContent = '';
+
+        const formData = new FormData(loginForm);
+        const payload = {
+          usernameOrEmail: formData.get('usernameOrEmail'),
+          password: formData.get('password')
+        };
+
+        try {
+          const response = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await response.json();
+
+          if (!response.ok || !data.success) {
+            loginError.textContent = data.message || 'Unable to sign in.';
+            return;
+          }
+
+          window.location.href = '/admin/dashboard';
+        } catch (error) {
+          loginError.textContent = 'Connection error. Please try again.';
+        }
+      });
+    </script>
+  </body>
+</html>
